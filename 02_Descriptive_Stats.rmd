@@ -1,0 +1,53 @@
+---
+title: "Descriptive Stats"
+author: "Tomoya Ozawa"
+date: "`r format(Sys.time(), '%Y/%m/%d')`"
+output: 
+  github_document:
+    pandoc_args: --webtex
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+```
+
+## Prepare
+
+```{r}
+list_02_table_figure_data <- readRDS("./intermediate/list_02_table_figure_data.rds")
+```
+
+
+## Summary of replacement data: Table Ⅱa
+
+- Subsample of buses for which at least 1 replacement occurred
+
+
+```{r}
+list_02_table_figure_data$table_2_a
+```
+
+
+## Summary of replacement data: Table Ⅱb
+
+- Subsample of buses for which no replacement occurred
+
+
+```{r}
+list_02_table_figure_data$table_2_b
+```
+
+
+
+
+
+
+
+
+
+
+
+
