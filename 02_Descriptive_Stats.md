@@ -1,7 +1,7 @@
 Descriptive Stats
 ================
 Tomoya Ozawa
-2021/06/11
+2021/06/12
 
 ## Prepare
 
@@ -60,3 +60,18 @@ list_02_table_figure_data$table_2_b
 | Full Sample |       352450 |        65643 |        207782 |       85208 |                130 |                 24 |                66.0 |             35.06 |                       49 |
 
 </div>
+
+## Bus Replacement Data: Full Ssample, Figure 1
+
+``` r
+fig_1 <- list_02_table_figure_data$figure_1 %>% 
+  ggplot(aes(x = mileage/1000, y = elapsed_time, color = type, shape = type)) +
+  geom_point() +
+  ggtitle("Figure 1: Bus Replacement Data, Full Ssample") +
+  xlab("Mileage since last replacement (Thousands)") +
+  ylab("Elapsed time (months)")
+
+fig_1
+```
+
+![](02_Descriptive_Stats_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->

@@ -1,4 +1,4 @@
-# objective: 
+# objective: replicate Table 2a, 2b and Figure 1 in Rust 1987
 
 
 
@@ -211,10 +211,53 @@ df_table_2_b <-
 
 
 
+# Figure 1
+df_replace_f1_mileage <- 
+  df_Bus_group_mileage_sub %>% 
+  filter(mileage > 0) %>% 
+  select(-when)
+
+df_replace_f1_elapsed_time <- 
+  df_Bus_group_elapsed_time_sub %>% 
+  pivot_longer(cols = -Bus_group,names_to = "when", values_to = "elapsed_time") %>% 
+  filter(elapsed_time > 0) %>% 
+  mutate(elapsed_time = elapsed_time/30)
+  select(-c("Bus_group", "when"))
+  
+df_replace_f1 <- 
+  df_replace_f1_mileage %>% 
+  bind_cols(df_replace_f1_elapsed_time) %>% 
+  mutate(type = "replace")
+  
+df_keep_f1 <- map_dfr(list_01_constructed_data, function(x){
+  return(x %>% select(Bus_group, odometer_at_1st_replacement, odometer_at_2nd_replacement, `odometer_reading_1985-05-01`, month_purchased, year_purchased, month_of_1st_engine_replacement, year_of_1st_engine_replacement, month_of_2nd_engine_replacement, year_of_2nd_engine_replacement))})
+  
+df_keep_f1 <- 
+  df_keep_f1 %>% 
+  mutate(odometer_max = if_else(odometer_at_2nd_replacement > 0, odometer_at_2nd_replacement, odometer_at_1st_replacement)) %>% 
+  mutate(date_begin = paste(paste0("19", year_purchased), month_purchased, "1", sep = "-"),
+         date_first = paste(paste0("19", year_of_1st_engine_replacement), month_of_1st_engine_replacement, "1", sep = "-"),
+         date_second = paste(paste0("19", year_of_2nd_engine_replacement), month_of_2nd_engine_replacement, "1", sep = "-")) %>% 
+  mutate(date_first = if_else(date_first == "190-0-1", "1900-1-1", date_first),
+         date_second = if_else(date_second == "190-0-1", "1900-1-1", date_second)) %>% 
+  mutate(date_max = case_when(
+    date_first == "1900-1-1" & date_second == "1900-1-1" ~ date_begin,
+    date_first != "1900-1-1" & date_second == "1900-1-1" ~ date_first,
+    TRUE ~ date_second
+  )) %>% 
+  mutate(mileage = `odometer_reading_1985-05-01`-odometer_max,
+         elapsed_time = (as.Date("1985-05-01") - as.Date(date_max))/30) %>% 
+  select(Bus_group, mileage, elapsed_time) %>% 
+  mutate(type = "keep")
+  
+df_f1 <- df_replace_f1 %>% 
+  bind_rows(df_keep_f1)
+
 # save output as rds
 list_02_table_figure_data <- list(
   table_2_a = df_table_2_a,
-  table_2_b = df_table_2_b
+  table_2_b = df_table_2_b,
+  figure_1 = df_f1
 )
 
 saveRDS(list_02_table_figure_data, "./intermediate/list_02_table_figure_data.rds")

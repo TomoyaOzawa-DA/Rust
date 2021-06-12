@@ -41,6 +41,17 @@ list_02_table_figure_data$table_2_b
 ```
 
 
+## Bus Replacement Data: Full Ssample, Figure 1
+```{r, message = FALSE}
+fig_1 <- list_02_table_figure_data$figure_1 %>% 
+  ggplot(aes(x = mileage/1000, y = elapsed_time, color = type, shape = type)) +
+  geom_point() +
+  ggtitle("Figure 1: Bus Replacement Data, Full Ssample") +
+  xlab("Mileage since last replacement (Thousands)") +
+  ylab("Elapsed time (months)")
+
+fig_1
+```
 
 
 
