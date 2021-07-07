@@ -1,0 +1,55 @@
+---
+title: "Descriptive Stats"
+author: "Tomoya Ozawa"
+date: "`r format(Sys.time(), '%Y/%m/%d')`"
+output: 
+  github_document:
+    pandoc_args: --webtex
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+```
+
+# Data Generation Process
+## Set True Parameters
+
+```{r}
+p_x0 = 0.36
+p_x1 = 0.48
+p_x2 = 0.16
+
+p <- c(p_x0, p_x1, p_x2)
+```
+
+```{r}
+RC <- 10
+theta11 <- 2
+beta <- 0.75
+```
+
+## Inner-loop
+```{r}
+out_prob <- function_inner_loop(grid = 90, params_theta_1 = c(RC, theta11), method = "linear", beta = beta, params_theta_3 = p, threshold = 1e-6)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
