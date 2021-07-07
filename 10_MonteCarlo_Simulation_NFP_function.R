@@ -3,7 +3,7 @@ function_utility <- function(grid, params_theta_1, method = "linear"){
   
   # Input: 
   ## grid: 状態変数xを離散化する際のグリッド数 = x_1, x_2, ... ,x_grid
-  ## params: 費用関数のパラメータベクトル。第1要素にはRC(エンジン交換費用)
+  ## params_theta_1: 費用関数のパラメータベクトル。第1要素にはRC(エンジン交換費用)
   ## method: 費用関数の形状の指定。まずはlinearのみ。
   
   # Output:
@@ -24,7 +24,16 @@ function_utility <- function(grid, params_theta_1, method = "linear"){
 
 
 function_transition_prob <- function(grid, params_theta_3, action){
-  # 推移確率行列を出力する関数
+  # Objective: 推移確率行列を出力する関数
+  
+  # Input: 
+  ## grid: 状態変数xを離散化する際のグリッド数 = x_1, x_2, ... ,x_grid
+  ## params_theta_3: 推移確率のパラメータベクトル。
+  ## action: i, エンジンを交換した場合は1, しなi\い場合は0
+  
+  # Output:
+  ## TransitionProb: 行列 (grid * grid)
+  
   TransitionProb <- matrix(0, nrow= grid, ncol = grid)
   
   if (action == 0){
@@ -60,8 +69,21 @@ function_transition_prob <- function(grid, params_theta_3, action){
 
 
 function_EV <- function(EV_base, grid, params_theta_1, method = "linear", beta, params_theta_3){
+  # Objective: 期待価値関数を出力する関数
+  
+  # Input: 
+  ## grid: 状態変数xを離散化する際のグリッド数 = x_1, x_2, ... ,x_grid
+  ## params_theta_1: 費用関数のパラメータベクトル。第1要素にはRC(エンジン交換費用)
+  ## method: 費用関数の形状の指定。まずはlinearのみ。
+  ## beta: 割引率
+  ## params_theta_3: 推移確率のパラメータベクトル。
+  
+  # Output:
+  ## out: 列ベクトル(grid*1)
+  
   out <- log(exp(function_utility(grid, params_theta_1, method = "linear")[, 2] + beta*function_transition_prob(grid, params_theta_3, action = 1)%*%EV_base) +
     exp(function_utility(grid, params_theta_1, method = "linear")[, 1] + beta*function_transition_prob(grid, params_theta_3, action = 0)%*%EV_base))
+  
   return(out)
 }
 
@@ -69,27 +91,56 @@ function_EV <- function(EV_base, grid, params_theta_1, method = "linear", beta, 
 
 
 function_choice_prob0 <- function(EV_fixed, grid, params_theta_1, method = "linear", params_theta_3){
+  # Objective: 交換しない選択をする確率, p(i = 0 | x)を出力する関数
+  
+  # Input: 
+  ## EV_fixed: 写像の不動点, 価値関数の値
+  ## grid: 状態変数xを離散化する際のグリッド数 = x_1, x_2, ... ,x_grid
+  ## params_theta_1: 費用関数のパラメータベクトル。第1要素にはRC(エンジン交換費用)
+  ## method: 費用関数の形状の指定。まずはlinearのみ。
+  ## params_theta_3: 推移確率のパラメータベクトル。
+  
+  # Output:
+  ## choice_prob0: 行列 (grid * 1)
+  
+  
   choice_prob0 <- matrix(0, grid, 1)
-  numerator_0 <- exp(function_utility(grid, params_theta_1, method = "linear")[, 1] + beta*function_transition_prob(grid, params_theta_3, action = 0)%*%EV_fixed)
-  numerator_1 <- exp(function_utility(grid, params_theta_1, method = "linear")[, 1] + beta*function_transition_prob(grid, params_theta_3, action = 1)%*%EV_fixed)
+  numerator_0 <- exp(function_utility(grid, params_theta_1, method = "linear")[, 1] + beta*function_transition_prob(grid, params_theta_3, action = 0)%*%EV_fixed) # i = 0の時の分子
+  numerator_1 <- exp(function_utility(grid, params_theta_1, method = "linear")[, 2] + beta*function_transition_prob(grid, params_theta_3, action = 1)%*%EV_fixed) # i = 1の時の分子
   denominator <- numerator_0 + numerator_1
   choice_prob0 <- numerator_0 / denominator # i = 0
+  
   return(choice_prob0)
 }
 
 
 
 function_inner_loop <- function(grid, params_theta_1, method = "linear", beta, params_theta_3,threshold = 1e-6){
-
-  iteration_max <- 1000
+  # Objective: 与えられたパラメータのもとで、積分価値関数の不動点を計算して、交換しない選択をする確率, p(i = 0 | x)を計算する関数
+  
+  # Input: 
+  ## EV_fixed: 写像の不動点, 価値関数の値
+  ## grid: 状態変数xを離散化する際のグリッド数 = x_1, x_2, ... ,x_grid
+  ## params_theta_1: 費用関数のパラメータベクトル。第1要素にはRC(エンジン交換費用)
+  ## method: 費用関数の形状の指定。まずはlinearのみ。
+  ## params_theta_3: 推移確率のパラメータベクトル。
+  ## beta: 割引率
+  ## threshold: 不動点を計算する際に使う閾値
+  
+  # Output:
+  ## prob0: 行列 (grid * 1)
+  
+  
+  iteration_max <- 1000 # 繰り返し回数の最大値
   achieved <- FALSE
   
-  EV <- matrix(0, grid, iteration_max)
+  EV <- matrix(0, grid, iteration_max) 
   
+  #不動点の計算
   for (i in 1: (iteration_max - 1)){
-    EV[, i+1] <- function_EV(EV[, i], grid, params_theta_1, method = "linear", beta, params_theta_3)
+    EV[, i+1] <- function_EV(EV[, i], grid, params_theta_1, method = "linear", beta, params_theta_3) 
     
-    if (sqrt(sum((EV[, i+1] - EV[, i])^2)) < threshold){
+    if (sqrt(sum((EV[, i+1] - EV[, i])^2)) < threshold){ # 差分が閾値より下回れば不動点に達したとみなす。
       position <- i+1
       cat("Convergence achieved in ",i+1," iterations")
       achieved <- TRUE
@@ -99,10 +150,10 @@ function_inner_loop <- function(grid, params_theta_1, method = "linear", beta, p
   }
   
   if(!achieved){
-    cat("Convergence NOT achieved in ",sqrt(sum((EV[, iteration_max] - EV[, iteration_max-1])^2)))
+    cat("Convergence NOT achieved in ",sqrt(sum((EV[, iteration_max] - EV[, iteration_max-1])^2))) # 繰り返し回数の最大値を超えても収束しなかった場合に警告する
   }
   
-  prob0 <- function_choice_prob0(EV[, position], grid, params_theta_1, method = "linear", params_theta_3)
+  prob0 <- function_choice_prob0(EV[, position], grid, params_theta_1, method = "linear", params_theta_3) # 求めた価値関数から選択確率, i = 0を計算
   
   return(prob0)
   

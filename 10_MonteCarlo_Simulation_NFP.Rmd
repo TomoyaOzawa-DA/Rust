@@ -33,7 +33,7 @@ beta <- 0.75
 
 ## Inner-loop
 ```{r}
-out_prob <- function_inner_loop(grid = 90, params_theta_1 = c(RC, theta11), method = "linear", beta = beta, params_theta_3 = p, threshold = 1e-6)
+out_prob0 <- function_inner_loop(grid = 90, params_theta_1 = c(RC, theta11), method = "linear", beta = beta, params_theta_3 = p, threshold = 1e-6)
 ```
 
 
