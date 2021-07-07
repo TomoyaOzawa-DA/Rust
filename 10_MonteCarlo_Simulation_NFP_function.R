@@ -13,7 +13,7 @@ function_utility <- function(grid, params_theta_1, method = "linear"){
   cost_matrix <- matrix(0, nrow = grid, ncol = 2)
   
   if(method == "linear"){
-      cost_matrix[, 1] <- 0.001*params_theta_1[2]*seq(from = 1, to = grid, by = 1) # メンテナンス費用
+      cost_matrix[, 1] <- params_theta_1[2]*seq(from = 1, to = grid, by = 1) # メンテナンス費用
       cost_matrix[, 2] <- params_theta_1[1] # エンジン交換費用
     }
 
