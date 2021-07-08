@@ -6,7 +6,7 @@ F1 = func_transition_prob( M, THETA, 1);
 
 %効用関数
 u0 = -0.001*THETA(2)*X;
-u1 = THETA(1)*ones(M, 1);
+u1 = -THETA(1)*ones(M, 1);
 
 P1 = 1 - P0;
 
